@@ -1,23 +1,40 @@
-"use client"
+"use client";
 import { useState, ChangeEvent, FormEvent } from "react";
 import axios from "axios";
-
+import { AxiosError } from "axios";
 
 function Home() {
   const [url, setUrl] = useState<string>("");
   const [title, setTitle] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     try {
-      const response = await axios.post<{ title: string }>(
-        "api/scrape",
-        { url }
-      );
+      const response = await axios.post<{ title: string }>("api/scrape", {
+        url,
+      });
       setTitle(response.data.title);
+      setErrorMessage("");
       setUrl("");
     } catch (error) {
-      console.error(error);
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError; // Cast error to AxiosError
+        if (
+          axiosError.response &&
+          axiosError.response.data &&
+          typeof axiosError.response.data === "object"
+        ) {
+          const responseData = axiosError.response.data;
+          if (Object.prototype.hasOwnProperty.call(responseData, "error")) {
+            setErrorMessage("Failed to scrape URL");
+          }
+        } else {
+          setErrorMessage("Failed to scrape URL");
+        }
+      } else {
+        setErrorMessage("An unknown error occurred");
+      }
     }
   };
 
@@ -48,6 +65,7 @@ function Home() {
             Submit
           </button>
         </form>
+        {errorMessage && <p className="text-red-600 mt-4">{errorMessage}</p>}
         {title && (
           <h2 className="text-xl font-bold mt-4">
             The title of this page is:{" "}

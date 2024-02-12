@@ -30,8 +30,14 @@ export default async function handler(
     const { url } = req.body as ScrapeRequest;
     const response = await axios.get(url);
     const $ = cheerio.load(response.data);
-    const title: string = $("title").text();
-    res.json({ title });
+    const title: string | null = $("title").text() || null;
+
+    // Check if title is available
+    if (title) {
+      res.json({ title });
+    } else {
+      res.json({ title: "Sorry, the title of this page is not available" });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to scrape URL" });
