@@ -14,6 +14,7 @@ interface MessageResponse {
 }
 interface ErrorResponse {
   error: string;
+  error_object?: any;
 }
 
 export default async function handler(
@@ -40,6 +41,8 @@ export default async function handler(
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to scrape URL" });
+    res
+      .status(500)
+      .json({ error: "Failed to scrape URL", error_object: error });
   }
 }
