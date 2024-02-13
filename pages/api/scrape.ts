@@ -46,10 +46,20 @@ export default async function handler(
 
     // Check if the response status is 404 (Page Not Found)
     if (response.status === 404) {
-      // If the response status is 404, there's no need to parse the HTML
-      return res.json({
-        title: "Page Not Found - The page you visited doesn't exist",
-      });
+  try {
+    const html = await response.text();
+    const $ = cheerio.load(html);
+    const title: string | null = $("title").text() || null;
+
+    if (title) {
+      return res.json({ title });
+    }
+  } catch (error) {
+    // Handle any errors that occur while parsing the HTML
+    return res.json({
+      title: "Page Not Found - The page you visited doesn't exist",
+    });
+  }
     }
     if (response.status === 400) {
       return res.json({
