@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import { useState, ChangeEvent, FormEvent } from "react";
 import axios from "axios";
 import { AxiosError } from "axios";
@@ -14,21 +14,19 @@ function Home() {
       const response = await axios.post<{ title: string }>("api/scrape", {
         url,
       });
-      setTitle(response.data.title);
-      setErrorMessage("");
-      setUrl("");
+      if (response.status === 200) {
+        setTitle(response.data.title);
+        setErrorMessage("");
+        setUrl("");
+      }
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        const axiosError = error as AxiosError; // Cast error to AxiosError
-        if (
-          axiosError.response &&
-          axiosError.response.data &&
-          typeof axiosError.response.data === "object"
-        ) {
-          const responseData = axiosError.response.data;
-          if (Object.prototype.hasOwnProperty.call(responseData, "error")) {
-            setErrorMessage("Failed to scrape URL");
-          }
+        const axiosError = error as AxiosError; 
+        if (axiosError.response && axiosError.response.status === 404) {
+          // Page Not Found error, extract title from response
+          const responseData = axiosError.response.data as { title: string };
+          const title = responseData.title;
+          setTitle(`${title} - The page you visited doesn't exist`);
         } else {
           setErrorMessage("Failed to scrape URL");
         }

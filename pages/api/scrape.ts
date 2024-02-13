@@ -9,9 +9,11 @@ interface ScrapeRequest {
 interface ScrapeResponse {
   title: string;
 }
+
 interface MessageResponse {
   message: string;
 }
+
 interface ErrorResponse {
   error: string;
   error_object?: any;
@@ -29,19 +31,36 @@ export default async function handler(
 
   try {
     const { url } = req.body as ScrapeRequest;
-    const response = await axios.get(url);
-    const $ = cheerio.load(response.data);
-    const title: string | null = $("title").text() || null;
+    const response = await fetch(url);
+    console.log("this is stauts", response.status);
+    console.log("this is stauts text", response.statusText);
+    // Check if the response status is 200
+    if (response.ok) {
+      const html = await response.text();
+      const $ = cheerio.load(html);
+      const title: string | null = $("title").text() || null;
 
-    // Check if title is available
-    if (title) {
-      res.json({ title });
-    } else {
-      res.json({ title: "Sorry, the title of this page is not available" });
+      if (title) {
+        return res.json({ title });
+      }
+    }
+
+    // Check if the response status is 404 (Page Not Found)
+    if (response.status === 404) {
+      // If the response status is 404, there's no need to parse the HTML
+      return res.json({
+        title: "Page Not Found - The page you visited doesn't exist",
+      });
+    }
+    if (response.status === 400) {
+      // If the response status is 404, there's no need to parse the HTML
+      return res.json({
+        title: "Bad request- Cannot generate Title for this website",
+      });
     }
   } catch (error) {
-    console.error(error);
-    res
+    // Catch any other errors (e.g., network errors)
+    return res
       .status(500)
       .json({ error: "Failed to scrape URL", error_object: error });
   }
