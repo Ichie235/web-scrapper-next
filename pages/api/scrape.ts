@@ -65,7 +65,10 @@ export default async function handler(
       });
     }
     if (response.status === 405) {
-      return res.json({ error: "Method Not Allowed" });
+      return res.json({ title: "Method Not Allowed" });
+    }
+    if (response.status === 502) {
+      return res.json({ title: "Bad Gateway" });
     }
   } catch (error) {
     // Catch any other errors (e.g., network errors)
