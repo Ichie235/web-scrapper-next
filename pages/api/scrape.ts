@@ -1,5 +1,4 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import axios from "axios";
 import cheerio from "cheerio";
 
 interface ScrapeRequest {
@@ -53,10 +52,20 @@ export default async function handler(
       });
     }
     if (response.status === 400) {
-      // If the response status is 404, there's no need to parse the HTML
       return res.json({
         title: "Bad request- Cannot generate Title for this website",
       });
+    }
+    if (response.status === 401) {
+      return res.json({ title: "Unauthorized - Authentication Required" });
+    }
+    if (response.status === 403) {
+      return res.json({
+        title: "Forbidden -  access the requested resource denied",
+      });
+    }
+    if (response.status === 405) {
+      return res.json({ error: "Method Not Allowed" });
     }
   } catch (error) {
     // Catch any other errors (e.g., network errors)
