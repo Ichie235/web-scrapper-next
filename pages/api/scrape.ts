@@ -67,20 +67,9 @@ export default async function handler(
       });
     }
     if (response.status === 401) {
-  try {
-    const html = await response.text();
-    const $ = cheerio.load(html);
-    const title: string | null = $("title").text() || null;
-
-    if (title) {
-      return res.json({ title });
-    }
-  } catch (error) {
-    // Handle any errors that occur while parsing the HTML
-    return res.json({
-      title: "Unauthorized - Authentication Required",
-    });
-  }
+      return res.json({
+        title: "Unauthorized -  authentication required ",
+      });
     }
     if (response.status === 403) {
       return res.json({
